@@ -1,0 +1,12 @@
+.topbar {
+    background-color: #753700a2;
+    color: white;
+    padding: 10px 0;
+}
+.topbar a {
+    color: white;
+    text-decoration: none;
+}
+.topbar a:hover {
+    text-decoration: underline;
+}
