@@ -56,6 +56,9 @@ app.post('/register', async (req ,res) => {
         const { username, email, password, confirm_password } = req.body;
 
         //validacion de contraseña
+        if (password !== confirm_password) {
+            return res.status(400).send('Las contraseñas no coinciden');
+        }
         // validando si el usuario existe
         const existingUser = await usuarios.findOne({ email });
         if(existingUser){
