@@ -8,6 +8,9 @@ const port = 3000;
 const url = 'mongodb://localhost:27017'; // URL por defecto de MongoDB
 const dbName = 'tenis_de_mesa'; // Nombre de la base de datos
 
+app.use(express.json()); //Middleware para parsear JSON
+app.use(express.urlencoded({ extended: true }));
+
 async function main() {
     const client = new MongoClient(url);
     try {
@@ -33,7 +36,7 @@ async function main() {
 
 main().catch(console.error);
 
-app.use(express.static(path.join(__dirname, 'public')));
+
 // Ruta principal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -43,3 +46,34 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
+
+app.post('/register', async (req ,res) => {
+    const client = new MongoClient(url);
+    try {
+        await client.connect();
+        const db = client.db(dbName);
+        const usuarios = db.collection('usuarios');
+        const { username, email, password, confirm_password } = req.body;
+
+        //validacion de contraseña
+        // validando si el usuario existe
+        const existingUser = await usuarios.findOne({ email });
+        if(existingUser){
+            return res.status(400).json({error: 'El usuario ya está registrado'});
+        }
+
+        // guardar el usuarios
+        const nuevoUsuario = { username, email, password };
+        await usuarios.insertOne(nuevoUsuario);
+        
+        res.status(201).json({ message: 'Usuario registrado exitosamente'});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: 'Error en el servidor'});
+    } finally {
+        await client.close();
+    }
+})
+app.use(express.static(path.join(__dirname, 'public')));
+
+
